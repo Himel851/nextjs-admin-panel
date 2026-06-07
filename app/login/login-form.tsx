@@ -1,18 +1,12 @@
 "use client";
 
-import { useActionState, useEffect } from "react";
-import { toast } from "react-toastify";
+import { useActionState } from "react";
 import { login, type LoginState } from "@/app/actions/auth";
 
 const initial: LoginState = undefined;
 
 export function LoginForm() {
   const [state, formAction, pending] = useActionState(login, initial);
-
-  useEffect(() => {
-    if (state?.error)
-      toast.error(state.error, { toastId: "login-error" });
-  }, [state]);
 
   return (
     <form action={formAction} className="flex flex-col gap-5">

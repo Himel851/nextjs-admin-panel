@@ -3,12 +3,11 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import {
-  ADMIN_SESSION_COOKIE,
-  getAdminCredentials,
-  getAuthSecret,
-  sessionCookieOptions,
-} from "@/lib/auth-config";
-import { createAdminSessionToken } from "@/lib/session-node";
+  checkCredentials,
+  generateToken,
+  TOKEN_COOKIE,
+  tokenCookieOptions,
+} from "@/lib/auth";
 
 export type LoginState = { error?: string } | undefined;
 
@@ -18,21 +17,20 @@ export async function login(
 ): Promise<LoginState> {
   const username = String(formData.get("username") ?? "").trim();
   const password = String(formData.get("password") ?? "");
-  const { username: okUser, password: okPass } = getAdminCredentials();
 
-  if (username !== okUser || password !== okPass) {
+  if (!checkCredentials(username, password)) {
     return { error: "Invalid username or password." };
   }
 
-  const secret = getAuthSecret();
-  const token = createAdminSessionToken(secret);
+  const token = generateToken();
   const store = await cookies();
-  store.set(ADMIN_SESSION_COOKIE, token, sessionCookieOptions());
-  redirect("/?signedIn=1");
+  store.set(TOKEN_COOKIE, token, tokenCookieOptions());
+
+  redirect("/dashboard?signedIn=1");
 }
 
 export async function logout() {
   const store = await cookies();
-  store.delete(ADMIN_SESSION_COOKIE);
+  store.delete(TOKEN_COOKIE);
   redirect("/login?signedOut=1");
 }
